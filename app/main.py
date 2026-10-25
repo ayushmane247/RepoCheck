@@ -1,8 +1,10 @@
 
 from pathlib import Path
+import os
 
 from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from app.errors import (
@@ -14,12 +16,25 @@ from app.inspector import inspect_repository
 from app.validation_service import validate_repository
 from app.errors import ArchiveDownloadError, UnsafeArchiveError
 from app.progress import publish_stage, read_stage
+from app.settings import ExecutionMode, load_execution_mode
 from uuid import UUID
+
+EXECUTION_MODE = load_execution_mode(
+    os.getenv("REPOCHECK_EXECUTION_MODE"),
+    is_render=os.getenv("RENDER") == "true",
+)
 
 app = FastAPI(
     title="RepoCheck",
     description="Inspect software repositories and validate their readiness.",
     version="0.1.0",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://repocheckk.vercel.app"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Accept", "Content-Type", "X-RepoCheck-Run-ID"],
 )
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -59,7 +74,9 @@ def validate_endpoint(
 ) -> dict:
     try:
         progress = (lambda stage: publish_stage(run_id, stage)) if run_id else None
-        report = validate_repository(request.url, progress=progress)
+        report = validate_repository(
+            request.url, progress=progress, execution_mode=EXECUTION_MODE
+        )
         if run_id:
             publish_stage(run_id, "Validation report ready")
         return report
@@ -83,14 +100,21 @@ def validation_progress(run_id: UUID) -> dict[str, str]:
     return {"stage": stage}
 
 
-@app.get("/", include_in_schema=False)
-def frontend_index() -> FileResponse:
+@app.get("/", include_in_schema=False, response_model=None)
+def frontend_index():
+    if EXECUTION_MODE is ExecutionMode.INSPECTION_ONLY:
+        return JSONResponse({
+            "service": "RepoCheck API",
+            "status": "ok",
+            "execution_mode": EXECUTION_MODE.value,
+        })
     entry = FRONTEND_ENTRY if FRONTEND_ENTRY.is_file() else FRONTEND_LEGACY_ENTRY
     return FileResponse(entry)
 
 
-if FRONTEND_ENTRY.is_file():
-    app.mount("/", StaticFiles(directory=FRONTEND_BUILD_DIR, html=True), name="frontend-build")
-else:
-    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="frontend-static")
+if EXECUTION_MODE is ExecutionMode.LOCAL_DOCKER:
+    if FRONTEND_ENTRY.is_file():
+        app.mount("/", StaticFiles(directory=FRONTEND_BUILD_DIR, html=True), name="frontend-build")
+    else:
+        app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="frontend-static")
 

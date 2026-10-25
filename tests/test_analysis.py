@@ -60,6 +60,15 @@ def test_unrecognized_runner_result_is_inconclusive():
     assert analysis["findings"][0]["code"] == "TEST_RESULT_UNKNOWN"
 
 
+def test_inspection_only_mode_reports_tests_not_run_without_assessment():
+    analysis = analyze_readiness(SUPPORTED, tests_not_run=True)
+    assert analysis["validation_status"] == "completed"
+    assert analysis["test_status"] == "not_run"
+    assert analysis["readiness_assessment"] == "not_assessed"
+    assert analysis["findings"][0]["code"] == "TESTS_NOT_RUN"
+    assert "did not execute" in analysis["findings"][0]["message"]
+
+
 def test_optional_configuration_absence_does_not_fail_passing_tests():
     configuration = {
         "summary": {"status": "checked"},

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: repocheck-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: REPOCHECK_EXECUTION_MODE
+        value: inspection_only

@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from app.validation_service import validate_repository
+from app.settings import ExecutionMode
 
 
 METADATA = {"repository": "owner/repo", "default_branch": "main"}
@@ -72,3 +73,33 @@ def test_passed_tests_return_report(tmp_path):
     assert [finding["code"] for finding in report["findings"]] == [
         "TESTS_PASSED", "INVALID_REPOSITORY_CONFIGURATION",
     ]
+
+
+def test_inspection_only_never_invokes_docker_and_does_not_claim_test_result(tmp_path):
+    source = tmp_path / "source" / "repo-main"
+    source.mkdir(parents=True)
+    detected = {"supported": True, "framework": "pytest", "test_files": ["tests/test_x.py"], "test_file_count": 1, "reason": None}
+    with (
+        patch("app.validation_service.parse_github_url", return_value=("owner", "repo")),
+        patch("app.validation_service.inspect_repository", return_value=METADATA),
+        patch("app.validation_service.create_temporary_workspace", return_value=tmp_path),
+        patch("app.validation_service.download_archive", return_value=b"archive"),
+        patch("app.validation_service.extract_archive_safely", return_value=source),
+        patch("app.validation_service.inspect_configuration", return_value=CONFIGURATION),
+        patch("app.validation_service.detect_support", return_value=detected),
+        patch("app.validation_service.DockerRunner.run_source", side_effect=AssertionError("Docker must not run in hosted mode")) as run_source,
+    ):
+        report = validate_repository(
+            "https://github.com/owner/repo",
+            execution_mode=ExecutionMode.INSPECTION_ONLY,
+        )
+    run_source.assert_not_called()
+    assert report["execution_mode"] == "inspection_only"
+    assert report["status"] == "not_run"
+    assert report["validation_status"] == "completed"
+    assert report["test_status"] == "not_run"
+    assert report["readiness_assessment"] == "not_assessed"
+    assert report["exit_code"] is None
+    assert report["duration_seconds"] is None
+    assert report["stdout"] == report["stderr"] == ""
+    assert [finding["code"] for finding in report["findings"]] == ["TESTS_NOT_RUN"]

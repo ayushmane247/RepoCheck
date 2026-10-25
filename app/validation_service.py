@@ -17,6 +17,7 @@ from app.errors import (
 from app.github_urls import parse_github_url
 from app.inspector import inspect_repository
 from app.runner import DockerRunner
+from app.settings import ExecutionMode
 from app.source_archive import (
     create_temporary_workspace,
     download_archive,
@@ -25,9 +26,12 @@ from app.source_archive import (
 
 
 def validate_repository(
-    url: str, progress: Callable[[str], None] | None = None
+    url: str,
+    progress: Callable[[str], None] | None = None,
+    *,
+    execution_mode: ExecutionMode = ExecutionMode.LOCAL_DOCKER,
 ) -> dict:
-    """Inspect, safely retrieve, detect, execute, and analyze a repository."""
+    """Inspect a repository and execute tests only in local Docker mode."""
     def stage(message: str) -> None:
         if progress is not None:
             progress(message)
@@ -37,6 +41,7 @@ def validate_repository(
         "repository": f"{owner}/{repository}",
         "default_branch": None,
         "status": "error",  # Kept for clients using the original response.
+        "execution_mode": execution_mode.value,
         "supported": False,
         "language": None,
         "framework": None,
@@ -87,6 +92,19 @@ def validate_repository(
             report["status"] = "unsupported"
             report["message"] = detection["reason"]
             report.update(analyze_readiness(detection, configuration=configuration))
+            return report
+
+        if execution_mode is ExecutionMode.INSPECTION_ONLY:
+            stage("Inspection complete; detected tests were not run in hosted mode")
+            report["status"] = "not_run"
+            report["message"] = (
+                "Repository inspection completed. Tests were not run by the hosted inspection-only service."
+            )
+            report["duration_seconds"] = None
+            report.update(analyze_readiness(
+                detection, configuration=configuration, tests_not_run=True
+            ))
+            stage("Preparing the inspection evidence")
             return report
 
         stage("Running detected tests in the restricted Docker runner")

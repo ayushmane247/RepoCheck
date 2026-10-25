@@ -38,6 +38,7 @@ def analyze_readiness(
     *,
     configuration: dict[str, Any] | None = None,
     validation_error: bool = False,
+    tests_not_run: bool = False,
 ) -> dict[str, Any]:
     """Summarize only outcomes RepoCheck can directly verify."""
     findings: list[dict[str, Any]] = []
@@ -93,7 +94,14 @@ def analyze_readiness(
             "findings": findings,
         }
 
-    if runner_result is None:
+    if tests_not_run:
+        test_status = "not_run"
+        findings.append(_finding(
+            "TESTS_NOT_RUN", "info", "Tests were not run",
+            "This hosted service inspected repository metadata and configuration only. It did not execute repository tests.",
+            "Run the detected tests in a trusted local environment to establish their result.",
+        ))
+    elif runner_result is None:
         test_status = "incomplete"
         findings.append(_finding(
             "TEST_RESULT_UNKNOWN", "warning", "Test result is unavailable",

@@ -34,7 +34,8 @@ export interface ValidationReport {
   exit_code?: number | null;
   stdout?: string;
   stderr?: string;
-  duration_seconds?: number;
+  duration_seconds?: number | null;
+  execution_mode?: string;
   message?: string;
   validation_status?: string;
   test_status?: string;

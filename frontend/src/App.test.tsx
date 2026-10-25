@@ -37,6 +37,7 @@ describe("RepoCheck frontend", () => {
     expect(resultState({ validation_status: "completed", test_status: "timed_out" })).toBe("failure");
     expect(resultState({ validation_status: "completed", test_status: "runner_error" })).toBe("failure");
     expect(resultState({ validation_status: "completed", test_status: "no_tests", readiness_assessment: "not_assessed" })).toBe("partial");
+    expect(resultState({ validation_status: "completed", test_status: "not_run", readiness_assessment: "not_assessed" })).toBe("partial");
     expect(resultState({ validation_status: "failed", test_status: "incomplete" })).toBe("error");
   });
 
@@ -135,6 +136,30 @@ describe("RepoCheck frontend", () => {
     expect(titles).toEqual(["Error", "Warning", "Informational"]);
     expect(screen.queryByText("not reported")).not.toBeInTheDocument();
     expect(screen.queryByText("GitHub Actions")).not.toBeInTheDocument();
+  });
+
+  it("shows inspection-only results as not run and never as passed", async () => {
+    const inspectionReport: ValidationReport = {
+      repository: "owner/repo", validation_status: "completed", test_status: "not_run",
+      readiness_assessment: "not_assessed", execution_mode: "inspection_only", supported: true,
+      test_files: ["tests/test_app.py"], test_file_count: 1, exit_code: null,
+      duration_seconds: null, stdout: "", stderr: "",
+      message: "Repository inspection completed. Tests were not run by the hosted inspection-only service.",
+      findings: [{ code: "TESTS_NOT_RUN", severity: "info", title: "Tests were not run", message: "This hosted service did not execute repository tests." }],
+    };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(successResponse(inspectionReport));
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /get started/i }));
+    await screen.findByRole("heading", { name: /drop the coordinates/i });
+    fireEvent.change(screen.getByLabelText(/repository coordinates/i), { target: { value: "https://github.com/owner/repo" } });
+    fireEvent.click(screen.getByRole("button", { name: /start analysis/i }));
+    expect(await screen.findByRole("heading", { name: "Repository inspected. Tests were not run." })).toBeInTheDocument();
+    expect(screen.getByText(/INSPECTION ONLY · TESTS NOT RUN/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Tests were not run"));
+    expect(screen.getByText(/no runner was started/)).toBeInTheDocument();
+    expect(screen.queryByText("Supported checks came back clean.")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("TERMINAL RECORD"));
+    expect(screen.getByText(/no test output exists/)).toBeInTheDocument();
   });
 
   it("rejects non-GitHub inputs without submitting", async () => {

@@ -34,4 +34,11 @@ describe("evidence-backed finding feedback", () => {
     expect(item.evidence).toContain(".github/workflows/");
     expect(item.why).toContain("Other CI systems and remote settings were not checked");
   });
+
+  it("states directly that inspection-only tests were not executed", () => {
+    const [item] = enrichFindings({ execution_mode: "inspection_only", test_status: "not_run", findings: [finding("TESTS_NOT_RUN", "info")] });
+    expect(item.evidence).toContain("no runner was started");
+    expect(item.why).toContain("cannot establish whether tests pass");
+    expect(item.category).toBe("Not run");
+  });
 });

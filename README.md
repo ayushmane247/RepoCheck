@@ -1,8 +1,10 @@
 # RepoCheck
 
 RepoCheck inspects a public GitHub repository, detects Python pytest tests,
-runs detected tests in a restricted Docker container, and reports what those
-checks establish. A passing test run is not a claim of production readiness.
+and reports what its checks establish. Local development can run detected tests
+in a restricted Docker container; the hosted free service is inspection-only
+and never executes submitted repository code. A passing test run is not a claim
+of production readiness.
 
 ## Current checks
 
@@ -17,6 +19,42 @@ checks establish. A passing test run is not a claim of production readiness.
   and dependency manifest presence without executing repository configuration.
 
 ## API and runner setup
+
+### Hosted free deployment (Render API + Vercel frontend)
+
+The root `render.yaml` defines a free Render web service, pins Python through
+`.python-version`, installs only this project's API requirements, starts Uvicorn
+on Render's `$PORT`, and uses `/health` for health checks. It explicitly sets
+`REPOCHECK_EXECUTION_MODE=inspection_only`. The service rejects unknown mode
+values during startup and fails before creating the FastAPI application if the
+mode is missing on Render. This guard uses Render's documented `RENDER=true`
+environment variable ([Render environment variables](https://render.com/docs/environment-variables)).
+Local development and Jenkins may omit the setting and retain `local_docker`.
+Do not change the hosted value to `local_docker` on a public service: that mode
+is intended for trusted local development and Jenkins.
+
+In hosted inspection-only mode RepoCheck still reads public GitHub metadata,
+downloads an archive, safely extracts it, detects supported test files, and
+checks known configuration. It does **not** start Docker, import or run tests,
+execute setup scripts, install repository dependencies, or return test output.
+Reports use `test_status: "not_run"` and `readiness_assessment: "not_assessed"`
+when supported test files exist. Unsupported languages and repositories with
+no supported test files retain their distinct `unsupported` and `no_tests`
+statuses. Hosted mode does not claim tests passed.
+
+The API allows browser requests only from `https://repocheckk.vercel.app` and
+does not allow credentials. In the Vercel project's environment settings, set
+`VITE_API_BASE_URL` to the public Render service origin, for example
+`https://repocheck-api.onrender.com` (use the actual assigned service hostname),
+then redeploy the frontend. Leave it unset for local Vite development, where
+relative API paths continue to use the existing development proxy. This value
+is public browser configuration; never put credentials or secrets in it.
+
+Render's free web service may spin down when idle, so its first request after
+inactivity can be delayed. The Vercel frontend can still show its indeterminate
+loading state until the API returns its synchronous inspection report.
+
+### Local development and Docker test execution
 
 Requirements: Python 3.12 or newer for the Docker runner image, project
 dependencies installed in the API environment, and Docker Desktop with its
@@ -107,7 +145,7 @@ response format.
 - `validation_status` says whether RepoCheck completed the validation workflow.
 - `test_status` describes the pytest result: `passed`, `failed`,
   `collection_failed`, `timed_out`, `runner_error`, `no_tests`, `unsupported`,
-  or `incomplete`.
+  `not_run` (hosted inspection-only mode), or `incomplete`.
 - `readiness_assessment` is `checks_passed`, `needs_attention`, or
   `not_assessed`. `checks_passed` means only that the detected tests passed.
 - `findings` contains stable codes, severity, explanation, and (when useful) a
@@ -168,6 +206,12 @@ Example response for a successful run:
   ]
 }
 ```
+
+For a hosted inspection-only response with supported test files, `status` and
+`test_status` are `not_run`, `execution_mode` is `inspection_only`, the test
+`exit_code` and `duration_seconds` are `null`, test output strings are empty,
+and a `TESTS_NOT_RUN` finding explains that no runner was started. This is not a
+successful test result.
 
 ## Supported scope and limitations
 
