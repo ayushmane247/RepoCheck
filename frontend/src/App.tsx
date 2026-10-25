@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Check, CircleAlert, Copy, RotateCw, ShieldCheck, X } from "lucide-react";
-import { ApiError, validateRepository } from "./services/api";
+import { ApiError, apiUrl, validateRepository } from "./services/api";
 import { enrichFindings } from "./feedback";
 import { OpeningArtwork, RooftopArtwork } from "./components/RooftopArtwork";
 import { WebSlingerScene } from "./components/WebSlingerScene";
@@ -121,7 +121,7 @@ export default function App() {
     await new Promise((resolve) => window.setTimeout(resolve, 250));
     while (!signal.aborted) {
       try {
-        const response = await fetch(`/repositories/progress/${runId}`, { signal, headers: { Accept: "application/json" } });
+        const response = await fetch(apiUrl(`/repositories/progress/${runId}`), { signal, headers: { Accept: "application/json" } });
         if (response.ok) {
           const result: unknown = await response.json();
           if (result && typeof result === "object" && "stage" in result && typeof result.stage === "string") setCurrentActivity(result.stage);

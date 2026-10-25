@@ -7,6 +7,12 @@ export class ApiError extends Error {
   }
 }
 
+export function apiUrl(path: string): string {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/+$/, "");
+  const normalizedPath = `/${path.replace(/^\/+/, "")}`;
+  return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath;
+}
+
 function responseError(body: unknown, status: number): string {
   const detail = typeof body === "object" && body !== null && "detail" in body
     ? (body as { detail?: unknown }).detail
@@ -22,7 +28,7 @@ function responseError(body: unknown, status: number): string {
 export async function validateRepository(url: string, signal?: AbortSignal, runId?: string): Promise<ValidationReport> {
   let response: Response;
   try {
-    response = await fetch("/repositories/validate", {
+    response = await fetch(apiUrl("/repositories/validate"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

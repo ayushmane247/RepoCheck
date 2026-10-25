@@ -23,6 +23,7 @@ describe("RepoCheck frontend", () => {
   const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, "clipboard");
   afterEach(() => {
     cleanup();
+    vi.unstubAllEnvs();
     if (clipboardDescriptor) Object.defineProperty(navigator, "clipboard", clipboardDescriptor);
     else Reflect.deleteProperty(navigator, "clipboard");
   });
@@ -81,6 +82,37 @@ describe("RepoCheck frontend", () => {
     expect(screen.getByText(/Other CI systems and remote settings were not checked/)).toBeInTheDocument();
     expect(screen.getByText("pytest.ini")).toBeInTheDocument();
     expect(screen.getByText(/Repository dependencies are not installed/)).toBeInTheDocument();
+  });
+
+  it("uses the configured API base for validation and progress polling", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://example-api.example.com///");
+    let resolveValidation!: (value: Response) => void;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      if (String(input).includes("/repositories/progress/")) {
+        return Promise.resolve(successResponse({ stage: "Live progress from the configured API." }));
+      }
+      return new Promise((resolve) => { resolveValidation = resolve; });
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /get started/i }));
+    await screen.findByRole("heading", { name: /drop the coordinates/i });
+    fireEvent.change(screen.getByLabelText(/repository coordinates/i), { target: { value: "https://github.com/owner/repo" } });
+    fireEvent.click(screen.getByRole("button", { name: /start analysis/i }));
+    expect(await screen.findByText("Live progress from the configured API.")).toBeInTheDocument();
+
+    const progressCall = fetchMock.mock.calls.find(([input]) => String(input).includes("/repositories/progress/"));
+    expect(progressCall).toBeDefined();
+    const progressUrl = String(progressCall?.[0]);
+    expect(progressUrl).toMatch(/^https:\/\/example-api\.example\.com\/repositories\/progress\//);
+    const runId = progressUrl.split("/").at(-1);
+
+    resolveValidation(successResponse());
+    await screen.findByRole("heading", { name: /this setup needs a closer look/i });
+
+    const validationCall = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/repositories/validate"));
+    expect(validationCall?.[0]).toBe("https://example-api.example.com/repositories/validate");
+    expect((validationCall?.[1]?.headers as Record<string, string>)["X-RepoCheck-Run-ID"]).toBe(runId);
   });
 
   it("shows findings in severity order and omits metadata the API did not return", async () => {
