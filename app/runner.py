@@ -3,6 +3,7 @@ import subprocess
 import time
 import uuid
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -21,6 +22,67 @@ class DockerRunner:
 
     def __init__(self, timeout_seconds: int = 30) -> None:
         self.timeout_seconds = timeout_seconds
+
+    def run_source(self, source_dir: Path) -> dict:
+        """Run discovered repository tests in the prebuilt restricted image."""
+        source_dir = Path(source_dir).resolve()
+        if not source_dir.is_dir():
+            raise ValueError("Source directory must exist.")
+        started = time.monotonic()
+        container_name = f"repocheck-{uuid.uuid4().hex[:12]}"
+        command = [
+            "docker", "run", "--name", container_name, "--network", "none",
+            "--memory", "128m", "--cpus", "0.5", "--pids-limit", "64",
+            "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,size=16m",
+            "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+            "--user", "10001:10001", "--env", "PYTHONDONTWRITEBYTECODE=1",
+            "--env", "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1", "--env", "HOME=/tmp",
+            "--mount", f"type=bind,source={source_dir},target=/workspace,readonly",
+            "repocheck-python-runner:dev",
+        ]
+        try:
+            try:
+                run = subprocess.run(
+                    command, capture_output=True, text=True,
+                    timeout=self.timeout_seconds, check=False, shell=False,
+                )
+                if run.returncode == 0:
+                    status = "succeeded"
+                elif run.returncode == 5:
+                    status = "no_tests_collected"
+                else:
+                    status = "failed"
+
+                return asdict(RunResult(
+                    status=status, exit_code=run.returncode,
+                    stdout=run.stdout[-10000:], stderr=run.stderr[-10000:],
+                    duration_seconds=round(time.monotonic() - started, 3),
+                ))
+            except subprocess.TimeoutExpired as exc:
+                subprocess.run(
+                    ["docker", "kill", container_name], capture_output=True,
+                    text=True, timeout=10, check=False, shell=False,
+                )
+                return asdict(RunResult(
+                    status="timeout", exit_code=None,
+                    stdout=str(exc.stdout or "")[-10000:],
+                    stderr=str(exc.stderr or "")[-10000:],
+                    duration_seconds=round(time.monotonic() - started, 3),
+                ))
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            return asdict(RunResult(
+                status="runner_error", exit_code=None, stdout="",
+                stderr=str(exc)[:1000],
+                duration_seconds=round(time.monotonic() - started, 3),
+            ))
+        finally:
+            try:
+                subprocess.run(
+                    ["docker", "rm", "-f", container_name], capture_output=True,
+                    text=True, timeout=10, check=False, shell=False,
+                )
+            except (OSError, subprocess.TimeoutExpired):
+                pass
 
     def run_fixture(self) -> dict:
         """Build and execute the trusted sample test project."""

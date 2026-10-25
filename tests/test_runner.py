@@ -1,8 +1,30 @@
 
 import subprocess
+from pathlib import Path
 from unittest.mock import patch
 
 from app.runner import DockerRunner
+
+
+def test_source_runner_keeps_restricted_docker_options(tmp_path):
+    with patch("app.runner.subprocess.run") as mock_run:
+        mock_run.side_effect = [
+            subprocess.CompletedProcess(args=["docker", "run"], returncode=0, stdout="1 passed", stderr=""),
+            subprocess.CompletedProcess(args=["docker", "rm"], returncode=0, stdout="", stderr=""),
+        ]
+
+        result = DockerRunner().run_source(Path(tmp_path))
+
+    command = mock_run.call_args_list[0].args[0]
+    assert result["status"] == "succeeded"
+    assert "--network" in command and command[command.index("--network") + 1] == "none"
+    assert "--read-only" in command
+    assert "--memory" in command and "--cpus" in command and "--pids-limit" in command
+    assert "--cap-drop" in command and command[command.index("--cap-drop") + 1] == "ALL"
+    assert "no-new-privileges" in command
+    assert "10001:10001" in command
+    mount = command[command.index("--mount") + 1]
+    assert mount.endswith("target=/workspace,readonly")
 
 
 def test_fixture_run_succeeds():
