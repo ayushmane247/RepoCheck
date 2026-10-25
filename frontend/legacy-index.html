@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="RepoCheck inspects public GitHub repositories and reports evidence-backed readiness findings.">
+  <title>RepoCheck — Repository Intelligence System</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/feedback.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="city-grain" aria-hidden="true"></div>
+  <main id="app">
+    <section id="intro-screen" class="scene intro-screen" aria-labelledby="intro-title">
+      <svg class="intro-city" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="night-sky" x2="0" y2="1"><stop stop-color="#111d35"/><stop offset=".62" stop-color="#101528"/><stop offset="1" stop-color="#080d18"/></linearGradient>
+          <radialGradient id="city-light"><stop stop-color="#287eae" stop-opacity=".55"/><stop offset="1" stop-color="#17345a" stop-opacity="0"/></radialGradient>
+          <linearGradient id="hero-suit" x2="1" y2="1"><stop stop-color="#f0444c"/><stop offset=".52" stop-color="#b91f36"/><stop offset="1" stop-color="#152c55"/></linearGradient>
+          <linearGradient id="roof-edge" x2="0" y2="1"><stop stop-color="#263b57"/><stop offset="1" stop-color="#0a101d"/></linearGradient>
+          <pattern id="tower-windows" width="28" height="34" patternUnits="userSpaceOnUse"><rect x="5" y="7" width="4" height="8" fill="#52b9e5" opacity=".36"/><rect x="17" y="7" width="4" height="8" fill="#e74653" opacity=".24"/></pattern>
+        </defs>
+        <rect width="1600" height="1000" fill="url(#night-sky)"/>
+        <circle cx="1160" cy="330" r="460" fill="url(#city-light)"/>
+        <g fill="#10192b" stroke="#30435f" stroke-width="2">
+          <path d="M0 400h125v-94h68v-90h53v184h86V278h42V91h12v187h57v-76h78v-99h13v99h40v230h70V310h32v-62h62v-91h13v91h42v-65h43v65h58v190h59V280h42V158h12v122h39V76h15v204h47V215h66v-66h15v66h50v247h89v-133h54v-126h12v126h53v-96h82v263h132v538H0Z"/>
+        </g>
+        <g opacity=".85" fill="url(#tower-windows)">
+          <path d="M193 216h53v598h-53zM332 278h86v536h-86zM475 102h78v712h-78zM623 248h62v566h-62zM727 158h62v656h-62zM885 148h43v666h-43zM1015 280h42v534h-42zM1100 76h47v738h-47zM1194 149h66v665h-66zM1351 126h53v688h-53zM1458 359h82v455h-82z"/>
+        </g>
+        <path d="M0 690c248-82 423-44 600 17 225 78 425 55 645-10 144-43 249-46 355-2v305H0Z" fill="url(#roof-edge)"/>
+        <path d="M0 691c250-82 428-40 601 18 225 76 424 50 645-14 148-43 250-43 354-1" fill="none" stroke="#435f7d" stroke-width="3" opacity=".75"/>
+        <g class="city-web" fill="none" stroke="#50b9e9" stroke-width="1.4" opacity=".38">
+          <path d="M1300 0 804 540M1300 0l-196 540M1300 0l78 540M1300 0l300 540M1300 0v540"/>
+          <path d="M1087 231q214 109 420 0M961 368q336 167 674 0M841 504q456 187 794 0"/>
+        </g>
+        <path class="swing-line" d="M1290 0C1190 210 1320 286 1170 420s-70 190-238 278" fill="none" stroke="#e33247" stroke-width="2" stroke-dasharray="5 11"/>
+        <g class="roof-scout" transform="translate(824 392)" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M92 198c-22-28-41-54-57-74l-54-20-8 14 45 30 26 52 57 42Z" fill="#172c4e" stroke="#5275a5" stroke-width="4"/>
+          <path d="m27 134-35-25-20 10 12 32 33 17" fill="#df3449" stroke="#ff6870" stroke-width="3"/>
+          <path d="M112 181c31-12 53-27 72-47l42 7 24-20-13-18-71 1-63 34-35 39Z" fill="#14294b" stroke="#4b72a8" stroke-width="4"/>
+          <path d="m210 141 29 7 28-20-10-20-34 1-24 17" fill="#e0394d" stroke="#ff6870" stroke-width="3"/>
+          <path d="M91 130c-20 1-43 20-48 47l-20 53 29 15 49-41 35-34 48 50 33-17-30-66c-9-19-26-32-48-33Z" fill="url(#hero-suit)" stroke="#f05865" stroke-width="4"/>
+          <path d="m47 179-44 5-38 36 13 17 49-18 29-23m135-13 43 10 38 31-13 17-50-17-29-23" fill="#14294b" stroke="#5075a9" stroke-width="4"/>
+          <path d="m91 127-8 36 31 31 39-34-8-37" fill="#d92f47" stroke="#f45b65" stroke-width="4"/>
+          <path d="m90 124-31-19-24-33 8-18 48 26 28 4 34-23 48-12 10 16-36 40-25 17Z" fill="#d72f45" stroke="#ff6570" stroke-width="4"/>
+          <path d="m63 71 25 6-7 15-27-8Zm94-9-27 10 7 15 29-12Z" fill="#dcecf4" stroke="#f4fbff" stroke-width="2"/>
+          <path d="m88 143 32 21 36-25m-89 49 18 6m68-9 18-7" fill="none" stroke="#f8787c" stroke-width="3" opacity=".8"/>
+          <path d="m-6 224-33 14m276-91 34-16" fill="none" stroke="#e33e52" stroke-width="3"/>
+        </g>
+        <path d="M0 817 373 759l248 64 257-23 268 68 454-96v228H0Z" fill="#080d18"/>
+        <path d="m0 817 373-58 248 64 257-23 268 68 454-96" fill="none" stroke="#e2394d" stroke-width="3" opacity=".74"/>
+        <g fill="#67d8f6" opacity=".7"><circle cx="252" cy="306" r="2"/><circle cx="1460" cy="292" r="2"/><circle cx="582" cy="237" r="2"/><circle cx="1190" cy="489" r="2"/></g>
+      </svg>
+      <div class="intro-vignette" aria-hidden="true"></div>
+      <div class="intro-content">
+        <a class="wordmark" href="#intro-screen" aria-label="RepoCheck home"><span class="web-check" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 2 38 12v16L20 38 2 28V12L20 2Z"/><path d="m10 21 6 6 14-15"/></svg></span>Repo<span>Check</span></a>
+        <p class="system-line"><span class="signal"></span> REPOSITORY INTELLIGENCE SYSTEM</p>
+        <h1 id="intro-title">EVERY REPOSITORY<br>HAS A <span>STORY.</span></h1>
+        <p class="intro-subtitle">Let's find out if yours is ready for action.</p>
+        <button id="get-started" class="button button-primary button-large" type="button">GET STARTED <span aria-hidden="true">↗</span></button>
+      </div>
+      <button id="skip-intro" class="skip-intro" type="button">Skip intro <span aria-hidden="true">↓</span></button>
+      <p class="intro-caption">NEW YORK / 23:47 <span>•</span> ALL SYSTEMS NOMINAL</p>
+      <span class="intro-index" aria-hidden="true">RC / 001</span>
+      <p id="intro-live" class="sr-only" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="briefing-screen" class="scene mission-screen" aria-labelledby="briefing-title" hidden>
+      <header class="mission-nav">
+        <a class="wordmark" href="#intro-screen" data-scene-link="intro-screen" aria-label="RepoCheck home"><span class="web-check" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 2 38 12v16L20 38 2 28V12L20 2Z"/><path d="m10 21 6 6 14-15"/></svg></span>Repo<span>Check</span></a>
+        <div class="nav-meta"><span class="signal"></span> FIELD BRIEFING <span class="nav-divider"></span> <a href="/docs" target="_blank" rel="noreferrer">API REFERENCE ↗</a></div>
+      </header>
+      <div class="mission-layout">
+        <div class="mission-visual" aria-label="Illustrated night skyline and rooftop scout">
+          <svg viewBox="0 0 740 720" role="img" aria-labelledby="art-title art-desc">
+            <title id="art-title">Rooftop repository scout</title>
+            <desc id="art-desc">An original masked rooftop scout surveys a geometric night skyline traced with fine blue web lines.</desc>
+            <defs><linearGradient id="brief-sky" x2="0" y2="1"><stop stop-color="#13213b"/><stop offset="1" stop-color="#0a101d"/></linearGradient><pattern id="brief-windows" width="26" height="30" patternUnits="userSpaceOnUse"><path d="M5 6h5v8H5zm12 0h5v8h-5z" fill="#51bde6" opacity=".45"/></pattern><radialGradient id="brief-halo"><stop stop-color="#36a9db" stop-opacity=".24"/><stop offset="1" stop-color="#36a9db" stop-opacity="0"/></radialGradient></defs>
+            <rect width="740" height="720" rx="20" fill="url(#brief-sky)"/><circle cx="430" cy="260" r="270" fill="url(#brief-halo)"/>
+            <g fill="#111c31" stroke="#273c5a" stroke-width="2"><path d="M0 285h58V190h48v95h49V133h17v152h72V227h37v-99h17v99h63v-54h58V74h18v99h48v112h38V165h39v120h31V216h47v69h30v-94h18v94h50v435H0Z"/></g>
+            <g fill="url(#brief-windows)"><path d="M58 190h48v430H58zm97-57h89v487h-89zm126-5h54v499h-54zm138-54h66v563h-66zm114 91h39v472h-39zm117 51h47v421h-47z"/></g>
+            <g fill="none" stroke="#4fc3ef" stroke-width="1" opacity=".38"><path d="M534 0 264 370m270-370-98 370m98-370 90 370M394 100q140 70 280 0M326 236q209 100 418 0"/></g>
+            <path d="M0 560 179 521l175 52 177-51 209 54v144H0Z" fill="#090f1b" stroke="#415a76" stroke-width="3"/>
+            <g transform="translate(335 353) scale(.72)" stroke-linejoin="round" stroke-linecap="round"><path d="m90 177-42-65-52-20-10 16 45 31 27 57 44 27Z" fill="#152c4e" stroke="#5074a4" stroke-width="5"/><path d="M105 171c28-7 52-21 73-41l43 5 22-17-12-18-70 3-60 34-36 33Z" fill="#15294b" stroke="#5074a4" stroke-width="5"/><path d="M90 119c-26 4-44 23-48 47l-19 52 29 13 49-42 34-33 48 50 31-18-29-62c-11-23-29-35-51-34Z" fill="#c72b43" stroke="#f05360" stroke-width="5"/><path d="m91 119-8 32 32 29 39-34-8-31" fill="#d12f46" stroke="#f05360" stroke-width="4"/><path d="m92 116-31-17-22-34 8-17 47 24 27 3 34-22 46-11 10 16-37 39-24 20Z" fill="#d32e45" stroke="#f05b66" stroke-width="5"/><path d="m63 69 25 6-7 14-26-8Zm92-8-26 9 7 14 28-11Z" fill="#e8f6fb" stroke="#fff" stroke-width="2"/></g>
+            <path d="m30 612 148-31 100 27" fill="none" stroke="#e43349" stroke-width="3"/>
+            <text x="28" y="681" fill="#8ca3be" font-family="monospace" font-size="10" letter-spacing="2">CITY GRID / LIVE FROM THE ROOFTOP</text>
+          </svg>
+          <div class="visual-stamp"><span>FIELD NOTE 01</span><span>READ ONLY</span></div>
+        </div>
+        <div class="briefing-copy">
+          <p class="eyebrow"><span class="signal"></span> MISSION BRIEFING / 01</p>
+          <h1 id="briefing-title">Alright, recruit.<br><span>Drop the coordinates.</span></h1>
+          <p class="briefing-deck">Point RepoCheck at a public GitHub repository. We’ll trace its tests and setup, run supported checks in isolation, then show the evidence.</p>
+          <form id="validate-form" novalidate>
+            <label for="repo-url">REPOSITORY COORDINATES</label>
+            <div class="url-control"><span class="url-glyph" aria-hidden="true">↗</span><input id="repo-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://github.com/owner/repo" required aria-describedby="url-hint form-error"><button id="submit-button" class="button button-primary" type="submit"><span>START ANALYSIS</span><span aria-hidden="true">↗</span></button></div>
+            <p id="url-hint" class="field-hint">Public GitHub repositories · HTTPS only</p>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+          </form>
+          <div class="briefing-rails" aria-label="Analysis capabilities">
+            <div><span class="rail-number">01</span><span><strong>Trace the tests</strong><small>Python / pytest detection and execution</small></span></div>
+            <div><span class="rail-number">02</span><span><strong>Read the setup</strong><small>Known configuration and workflow paths</small></span></div>
+            <div><span class="rail-number">03</span><span><strong>Return with evidence</strong><small>Findings grounded in actual checks</small></span></div>
+          </div>
+          <p class="safety-note"><span aria-hidden="true">⬡</span> Restricted Docker runner · no network · no repository dependency installs</p>
+          <button id="back-to-intro" class="text-button" type="button">← Back to the opening scene</button>
+        </div>
+      </div>
+      <p class="screen-code">REPOCHECK / FIELD OPERATIONS <span>02 — BRIEFING</span></p>
+    </section>
+
+    <section id="analysis-screen" class="scene analysis-screen" aria-labelledby="analysis-title" hidden>
+      <header class="mission-nav report-nav">
+        <a class="wordmark" href="#intro-screen" data-scene-link="intro-screen" aria-label="RepoCheck home"><span class="web-check" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 2 38 12v16L20 38 2 28V12Z"/><path d="m10 21 6 6 14-15"/></svg></span>Repo<span>Check</span></a>
+        <div class="nav-meta"><span class="signal"></span> REPOSITORY INTELLIGENCE <span class="nav-divider"></span><span id="analysis-repository" class="mono"></span></div>
+        <button id="new-analysis" class="button button-quiet" type="button">NEW ANALYSIS <span aria-hidden="true">↗</span></button>
+      </header>
+      <div id="analysis-loading" class="analysis-loading" aria-live="polite">
+        <div class="loading-orbit" aria-hidden="true"><svg viewBox="0 0 180 180"><circle cx="90" cy="90" r="65"/><circle cx="90" cy="90" r="42"/><path d="M90 0v180M0 90h180M27 27l126 126M153 27 27 153"/><circle class="orbit-dot" cx="90" cy="25" r="4"/></svg></div>
+        <p class="eyebrow"><span class="signal"></span> MISSION IN PROGRESS</p>
+        <h1 id="analysis-title" tabindex="-1">Running diagnostics.<br><span>Let's see what we're dealing with.</span></h1>
+        <p id="loading-message">RepoCheck is inspecting the repository. The API returns a final result when its checks finish.</p>
+        <span class="indeterminate-bar" aria-hidden="true"><i></i></span>
+        <p class="loading-foot">NO ESTIMATED PROGRESS <span>·</span> NO REPOSITORY CODE ON THIS PAGE</p>
+      </div>
+      <div id="analysis-error" class="analysis-error" role="alert" hidden>
+        <p class="eyebrow"><span class="signal signal-red"></span> UPLINK INTERRUPTED</p>
+        <h1>We lost the trail.<br><span>The repository remains unjudged.</span></h1>
+        <p id="error-message" tabindex="-1"></p>
+        <div class="error-actions"><button id="retry-analysis" class="button button-primary" type="button">RETRY ANALYSIS ↻</button><button id="edit-repository" class="button button-outline" type="button">EDIT REPOSITORY</button></div>
+      </div>
+      <section id="mission-report" class="mission-report" aria-labelledby="report-title" hidden>
+        <p id="report-announcement" class="sr-only" role="status" aria-live="polite"></p>
+        <div class="report-heading">
+          <div><p id="report-eyebrow" class="eyebrow">MISSION REPORT / COMPLETE</p><h1 id="report-title" tabindex="-1">Mission report ready.</h1><p id="report-message" class="report-message"></p></div>
+          <div id="verdict-seal" class="verdict-seal" aria-hidden="true"><span></span></div>
+        </div>
+        <div class="verdict-strip" aria-label="Validation summary">
+          <div><span>VALIDATION</span><strong id="validation-value">—</strong></div><div><span>TESTS</span><strong id="test-value">—</strong></div><div><span>READINESS</span><strong id="readiness-value">—</strong></div><div><span>CONFIGURATION</span><strong id="configuration-value">—</strong></div>
+        </div>
+        <div class="report-grid">
+          <section class="report-panel findings-panel" aria-labelledby="findings-title">
+            <div class="panel-heading"><div><p class="eyebrow">EVIDENCE BOARD</p><h2 id="findings-title">Findings <span id="finding-count" class="count-chip">0</span></h2></div><div class="filter-group" role="group" aria-label="Filter findings"><button class="filter-button is-selected" data-filter="all" type="button" aria-pressed="true">ALL</button><button class="filter-button" data-filter="error" type="button" aria-pressed="false">ERRORS</button><button class="filter-button" data-filter="warning" type="button" aria-pressed="false">WARNINGS</button><button class="filter-button" data-filter="info" type="button" aria-pressed="false">INFO</button></div></div>
+            <div id="findings-list" class="findings-list"></div>
+          </section>
+          <aside class="report-panel snapshot-panel" aria-labelledby="snapshot-title">
+            <div class="panel-heading"><div><p class="eyebrow">REPOSITORY SCAN</p><h2 id="snapshot-title">Field snapshot</h2></div></div>
+            <dl class="repo-facts"><div><dt>Repository</dt><dd id="repository-value">—</dd></div><div><dt>Default branch</dt><dd id="branch-value">—</dd></div><div><dt>Language / runner</dt><dd id="language-value">—</dd></div><div><dt>Test files detected</dt><dd id="test-count-value">—</dd></div><div><dt>Exit code</dt><dd id="exit-code-value">—</dd></div><div><dt>Execution time</dt><dd id="duration-value">—</dd></div></dl>
+            <div id="configuration-details" class="configuration-details"></div>
+          </aside>
+        </div>
+        <details class="terminal-panel">
+          <summary><span><b>TERMINAL RECORD</b><small>RAW OUTPUT FROM THE RESTRICTED RUN</small></span><span class="terminal-toggle" aria-hidden="true">+</span></summary>
+          <div class="terminal-content"><div class="terminal-toolbar"><span id="terminal-meta">stdout / stderr</span><button class="copy-button" data-copy="logs" type="button">COPY LOGS ↗</button></div><pre id="test-logs" class="log-output"></pre></div>
+        </details>
+        <div class="report-actions"><div><p id="copy-feedback" role="status" aria-live="polite"></p><span>Every conclusion stays tied to a reported check.</span></div><div><button id="copy-summary" class="button button-outline" type="button">COPY SUMMARY</button><button id="copy-report" class="button button-outline" type="button">COPY REPORT</button><button id="run-again" class="button button-primary" type="button">NEW ANALYSIS ↗</button></div></div>
+      </section>
+      <footer class="report-footer"><span>REPOCHECK / EVIDENCE OVER ASSUMPTION</span><a href="/docs" target="_blank" rel="noreferrer">API REFERENCE ↗</a></footer>
+    </section>
+  </main>
+</body>
+</html>

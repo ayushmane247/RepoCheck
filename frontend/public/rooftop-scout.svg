@@ -1,0 +1,13 @@
+<svg viewBox="0 0 740 720" role="img" aria-labelledby="art-title art-desc">
+            <title id="art-title">Rooftop repository scout</title>
+            <desc id="art-desc">An original masked rooftop scout surveys a geometric night skyline traced with fine blue web lines.</desc>
+            <defs><linearGradient id="brief-sky" x2="0" y2="1"><stop stop-color="#13213b"/><stop offset="1" stop-color="#0a101d"/></linearGradient><pattern id="brief-windows" width="26" height="30" patternUnits="userSpaceOnUse"><path d="M5 6h5v8H5zm12 0h5v8h-5z" fill="#51bde6" opacity=".45"/></pattern><radialGradient id="brief-halo"><stop stop-color="#36a9db" stop-opacity=".24"/><stop offset="1" stop-color="#36a9db" stop-opacity="0"/></radialGradient></defs>
+            <rect width="740" height="720" rx="20" fill="url(#brief-sky)"/><circle cx="430" cy="260" r="270" fill="url(#brief-halo)"/>
+            <g fill="#111c31" stroke="#273c5a" stroke-width="2"><path d="M0 285h58V190h48v95h49V133h17v152h72V227h37v-99h17v99h63v-54h58V74h18v99h48v112h38V165h39v120h31V216h47v69h30v-94h18v94h50v435H0Z"/></g>
+            <g fill="url(#brief-windows)"><path d="M58 190h48v430H58zm97-57h89v487h-89zm126-5h54v499h-54zm138-54h66v563h-66zm114 91h39v472h-39zm117 51h47v421h-47z"/></g>
+            <g fill="none" stroke="#4fc3ef" stroke-width="1" opacity=".38"><path d="M534 0 264 370m270-370-98 370m98-370 90 370M394 100q140 70 280 0M326 236q209 100 418 0"/></g>
+            <path d="M0 560 179 521l175 52 177-51 209 54v144H0Z" fill="#090f1b" stroke="#415a76" stroke-width="3"/>
+            <g transform="translate(335 353) scale(.72)" stroke-linejoin="round" stroke-linecap="round"><path d="m90 177-42-65-52-20-10 16 45 31 27 57 44 27Z" fill="#152c4e" stroke="#5074a4" stroke-width="5"/><path d="M105 171c28-7 52-21 73-41l43 5 22-17-12-18-70 3-60 34-36 33Z" fill="#15294b" stroke="#5074a4" stroke-width="5"/><path d="M90 119c-26 4-44 23-48 47l-19 52 29 13 49-42 34-33 48 50 31-18-29-62c-11-23-29-35-51-34Z" fill="#c72b43" stroke="#f05360" stroke-width="5"/><path d="m91 119-8 32 32 29 39-34-8-31" fill="#d12f46" stroke="#f05360" stroke-width="4"/><path d="m92 116-31-17-22-34 8-17 47 24 27 3 34-22 46-11 10 16-37 39-24 20Z" fill="#d32e45" stroke="#f05b66" stroke-width="5"/><path d="m63 69 25 6-7 14-26-8Zm92-8-26 9 7 14 28-11Z" fill="#e8f6fb" stroke="#fff" stroke-width="2"/></g>
+            <path d="m30 612 148-31 100 27" fill="none" stroke="#e43349" stroke-width="3"/>
+            <text x="28" y="681" fill="#8ca3be" font-family="monospace" font-size="10" letter-spacing="2">CITY GRID / LIVE FROM THE ROOFTOP</text>
+          </svg>
