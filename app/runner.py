@@ -18,7 +18,8 @@ class RunResult:
 class DockerRunner:
     """Build and run a controlled test fixture with Docker."""
 
-    IMAGE = "repocheck-fixture:dev"
+    SOURCE_IMAGE = "repocheck-python-runner:dev"
+    FIXTURE_IMAGE = "repocheck-fixture:dev"
 
     def __init__(self, timeout_seconds: int = 30) -> None:
         self.timeout_seconds = timeout_seconds
@@ -38,7 +39,7 @@ class DockerRunner:
             "--user", "10001:10001", "--env", "PYTHONDONTWRITEBYTECODE=1",
             "--env", "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1", "--env", "HOME=/tmp",
             "--mount", f"type=bind,source={source_dir},target=/workspace,readonly",
-            "repocheck-python-runner:dev",
+            self.SOURCE_IMAGE,
         ]
         try:
             try:
@@ -93,7 +94,7 @@ class DockerRunner:
             build = subprocess.run(
                 [
                     "docker", "build",
-                    "--tag", self.IMAGE,
+                    "--tag", self.FIXTURE_IMAGE,
                     "fixtures/sample-python",
                 ],
                 capture_output=True,
@@ -126,7 +127,7 @@ class DockerRunner:
                 "--cap-drop", "ALL",
                 "--security-opt", "no-new-privileges",
                 "--user", "10001:10001",
-                self.IMAGE,
+                self.FIXTURE_IMAGE,
                 "python", "-m", "pytest", "-v", "-p", "no:cacheprovider",
                 "/workspace/test_math.py",
             ]

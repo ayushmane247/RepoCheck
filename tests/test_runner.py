@@ -17,6 +17,7 @@ def test_source_runner_keeps_restricted_docker_options(tmp_path):
 
     command = mock_run.call_args_list[0].args[0]
     assert result["status"] == "succeeded"
+    assert command[-1] == DockerRunner.SOURCE_IMAGE
     assert "--network" in command and command[command.index("--network") + 1] == "none"
     assert "--read-only" in command
     assert "--memory" in command and "--cpus" in command and "--pids-limit" in command
@@ -56,6 +57,10 @@ def test_fixture_run_succeeds():
     assert result["exit_code"] == 0
     assert "2 passed" in result["stdout"]
     assert mock_run.call_count == 3
+    build_command = mock_run.call_args_list[0].args[0]
+    run_command = mock_run.call_args_list[1].args[0]
+    assert build_command[build_command.index("--tag") + 1] == DockerRunner.FIXTURE_IMAGE
+    assert DockerRunner.FIXTURE_IMAGE in run_command
 
 
 def test_fixture_build_failure():

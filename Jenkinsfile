@@ -39,6 +39,12 @@ pipeline {
             }
         }
 
+        stage('Build Source Runner Image') {
+            steps {
+                bat 'docker build --tag repocheck-python-runner:dev --file runner-image/Dockerfile runner-image'
+            }
+        }
+
         stage('Backend Tests') {
             steps {
                 bat '''
@@ -47,6 +53,12 @@ pipeline {
                     .venv-ci\\Scripts\\python.exe -m pip install -r requirements.txt
                     .venv-ci\\Scripts\\python.exe -m pytest -q
                 '''
+            }
+        }
+
+        stage('Docker Source Runner Integration Smoke Test') {
+            steps {
+                bat '.venv-ci\\Scripts\\python.exe -m pytest -q docker-integration\\runner_smoke.py'
             }
         }
 

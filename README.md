@@ -22,11 +22,37 @@ Requirements: Python 3.12 or newer for the Docker runner image, project
 dependencies installed in the API environment, and Docker Desktop with its
 Linux container engine running.
 
-Build the runner image from the repository root:
+Build the reusable source-runner image from the repository root before
+validating repositories or running the Docker integration smoke test:
 
 ```powershell
 docker build -t repocheck-python-runner:dev -f runner-image/Dockerfile runner-image
 ```
+
+`DockerRunner.run_source()` runs this prebuilt `repocheck-python-runner:dev`
+image. It does not build an image per repository. It mounts the extracted
+repository read-only at `/workspace` and runs the image's fixed pytest command
+with no network and the resource and privilege restrictions described above.
+
+The trusted sample fixture has a different image, `repocheck-fixture:dev`.
+`DockerRunner.run_fixture()` builds it from `fixtures/sample-python/Dockerfile`
+on each call and then runs the fixed sample test. This fixture image is not
+used to validate submitted repositories.
+
+To explicitly run the real Docker smoke test, first build the source runner
+image as shown above, confirm `docker info` succeeds, then run from the
+repository root:
+
+```powershell
+python -m pytest -q docker-integration/runner_smoke.py
+```
+
+This test creates a temporary one-test pytest project, calls the real
+`DockerRunner.run_source()` method without mocking subprocess calls, verifies
+that pytest passed inside `/workspace`, and removes its temporary source files.
+The runner also removes the uniquely named container in its cleanup path. The
+smoke test is intentionally separate from normal unit-test discovery because
+it requires a working Docker daemon and the prebuilt source-runner image.
 
 Install API requirements and build the frontend before starting FastAPI:
 
