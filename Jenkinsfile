@@ -1,10 +1,11 @@
+
 pipeline {
     agent any
 
     options {
         skipDefaultCheckout(false)
         disableConcurrentBuilds()
-        timeout(time: 10, unit: 'MINUTES')
+        timeout(time: 15, unit: 'MINUTES')
     }
 
     stages {
@@ -32,6 +33,12 @@ pipeline {
             }
         }
 
+        stage('Check Docker') {
+            steps {
+                bat 'docker info'
+            }
+        }
+
         stage('Backend Tests') {
             steps {
                 bat '''
@@ -42,11 +49,41 @@ pipeline {
                 '''
             }
         }
+
+        stage('Frontend Install') {
+            steps {
+                dir('frontend') {
+                    bat 'npm ci'
+                }
+            }
+        }
+
+        stage('Frontend Tests') {
+            steps {
+                dir('frontend') {
+                    bat 'npm test'
+                }
+            }
+        }
+
+        stage('Frontend Production Build') {
+            steps {
+                dir('frontend') {
+                    bat 'npm run build'
+                }
+            }
+        }
     }
 
     post {
+        success {
+            echo 'All RepoCheck CI stages passed.'
+        }
+        failure {
+            echo 'RepoCheck CI failed. Inspect the first failed stage and its console output.'
+        }
         always {
-            echo 'RepoCheck CI pipeline finished. Check the stage results above.'
+            echo 'RepoCheck CI pipeline finished.'
         }
     }
 }
